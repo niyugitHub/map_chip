@@ -21,6 +21,10 @@ private:
 	int chipNumX();
 	int chipNumY();
 	int chipNum();
+
+	// マップデータの入出力
+	void outputData();	// マップのデータを出力する
+	void readData();	// マップのデータを読み込む
 private:
 	// マップチップ編集用カーソルの表示
 	void drawCursor();
