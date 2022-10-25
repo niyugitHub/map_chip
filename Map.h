@@ -26,6 +26,8 @@ private:
 	void outputData();	// マップのデータを出力する
 	void readData();	// マップのデータを読み込む
 private:
+	// マップの描画
+	void drawMap(int offsetX, int offsetY);
 	// マップチップ編集用カーソルの表示
 	void drawCursor();
 	// グラフィックデータのハンドル
@@ -38,4 +40,9 @@ private:
 	// マップチップ編集用データ
 	int m_cursorNo;
 	std::vector<int> m_mapData;
+
+
+	// スクロールする
+	int m_scrollX;
+	int m_scrollY;
 };

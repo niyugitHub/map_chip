@@ -43,7 +43,9 @@ Map::Map() :
 	m_graphWidth(0),
 	m_graphHeight(0),
 	m_cursorNo(0),
-	m_mapData(kBgNumX * kBgNumY,0)
+	m_mapData(kBgNumX * kBgNumY,0),
+	m_scrollX(0),
+	m_scrollY(0)
 {
 
 }
@@ -93,7 +95,7 @@ void Map::update()
 	//	outputData();
 		readData();
 	}
-
+#if false
 	if (Pad::isPress(PAD_INPUT_UP))
 	{
 		if(indexY > 0)
@@ -117,48 +119,96 @@ void Map::update()
 		if (indexX < (kBgNumX - 1))
 		m_cursorNo++;
 	}
+#else
+	if (Pad::isPress(PAD_INPUT_UP))
+	{
+		m_scrollY += 32;
+		if (m_scrollY > Game::kScreenHeight)
+		{
+			m_scrollY -= Game::kScreenHeight;
+		}
+	}
+	if (Pad::isPress(PAD_INPUT_DOWN))
+	{
+		m_scrollY -= 32;
+		if (m_scrollY < -Game::kScreenHeight)
+		{
+			m_scrollY += Game::kScreenHeight;
+		}
+	}
+	if (Pad::isPress(PAD_INPUT_LEFT))
+	{
+		m_scrollX += 32;
+		if (m_scrollX > Game::kScreenWidth)
+		{
+			m_scrollX -= Game::kScreenWidth;
+		}
+	}
+	if (Pad::isPress(PAD_INPUT_RIGHT))
+	{
+		m_scrollX -= 32;
+		if (m_scrollX < -Game::kScreenWidth)
+		{
+			m_scrollX += Game::kScreenWidth;
+		}
+	}
+
+#endif
 }
 
 void Map::draw()
 {
-#if false
-	for (int x = 0; x < kBgNumX; x++)
-	{
-		for (int y = 0; y < kBgNumY; y++)
-		{
-			const int chipNo = kMapData[y][x];
-			assert(chipNo >= 0);
-			assert(chipNo < chipNum());
-			int graphX = (chipNo % chipNumX()) * kChipSize;
-			int graphY = (chipNo / chipNumX()) * kChipSize;
+	// m_scrollX > 0	‰E‚É‚¸‚ê‚Ä‚¢‚é
+	// m_scrollX < 0	¶‚É‚¸‚ê‚Ä‚¢‚é
+	// m_scrollY > 0	‰º‚É‚¸‚ê‚Ä‚¢‚é
+	// m_scrollY < 0	ã‚É‚¸‚ê‚Ä‚¢‚é
 
-			DrawRectGraph(x * kChipSize, y * kChipSize,
-				graphX, graphY, kChipSize, kChipSize,
-				m_handle, true, false);
+#if false
+	for (int x = -1; x <= 1; x++)
+	{
+		for (int y = -1; y <= 1; y++)
+		{
+			int offsetX = x * Game::kScreenWidth + m_scrollX;
+			int offsetY = y * Game::kScreenHeight + m_scrollY;
+			drawMap(offsetX, offsetY);
 		}
 	}
 #else
-// m_mapData
+	int offsetX = m_scrollX;
+	if (offsetX > 0)		offsetX -= Game::kScreenWidth;
 
+	int offsetY = m_scrollY;
+	if (offsetY > 0)		offsetY -= Game::kScreenHeight;
+
+	for (int x = 0; x < 2; x++)
+	{
+		for (int y = 0; y < 2; y++)
+		{
+			drawMap(offsetX + x * Game::kScreenWidth, offsetY + y * Game::kScreenHeight);
+		}
+	}
+#endif
+
+	drawCursor();
+}
+
+void Map::drawMap(int offsetX, int offsetY)
+{
 	for (int x = 0; x < kBgNumX; x++)
 	{
 		for (int y = 0; y < kBgNumY; y++)
 		{
-		//	const int chipNo = kMapData[y][x];
 			const int chipNo = m_mapData[y * kBgNumX + x];
 			assert(chipNo >= 0);
 			assert(chipNo < chipNum());
 			int graphX = (chipNo % chipNumX()) * kChipSize;
 			int graphY = (chipNo / chipNumX()) * kChipSize;
 
-			DrawRectGraph(x * kChipSize, y * kChipSize,
+			DrawRectGraph(x * kChipSize + offsetX, y * kChipSize + offsetY,
 				graphX, graphY, kChipSize, kChipSize,
 				m_handle, true, false);
 		}
 	}
-
-#endif
-	drawCursor();
 }
 void Map::drawCursor()
 {
